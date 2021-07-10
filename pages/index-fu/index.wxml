@@ -1,0 +1,21 @@
+<!--index.wxml-->
+<view class="container">
+  <view class="wrap">
+    <view class="list {{cell_x % 2 === 1 ? 'even' : '' }}" wx:for="{{grid}}" wx:key="cell_x"
+          wx:for-index="cell_x"
+    >
+      <view wx:for="{{item}}" wx:key='cell_y'
+            class="item" bindtap='handleClick'
+            data-x="{{cell_x}}"
+            data-y="{{cell_y}}"
+            wx:for-item="cell"
+            wx:for-index="cell_y"
+      >
+        <view wx:if="{{cell === 0.5}}" class="path"></view>
+        <view wx:if="{{cell === 1}}" class="trick"></view>
+        <view class="mouse"
+              wx:if="{{cell === 0 && mouse.x === cell_x && mouse.y === cell_y }}"></view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,36 @@
+.container {
+
+}
+.wrap {
+  width: 80%;
+  margin: 100rpx auto 0 auto;
+}
+.list {
+  display: flex;
+  align-items: center;
+  margin-top: -10rpx;
+}
+.item {
+  width: 60rpx;
+  height: 60rpx;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.even {
+  margin-left: 30rpx;
+}
+
+.trick{
+  background-color: #3b3939;
+  height: 100%;
+}
+
+.mouse{
+  background-color: #702bbf;
+  height: 100%;
+}
+.path{
+  background-color: #73a373;
+  height: 100%;
+}
