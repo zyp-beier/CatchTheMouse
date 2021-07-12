@@ -35,7 +35,7 @@
   "compileType": "miniprogram",
   "libVersion": "2.18.0",
   "appid": "wx6a2fc9c872aeaa09",
-  "projectname": "a",
+  "projectname": "catch-the-mouse",
   "debugOptions": {
     "hidedInDevtools": []
   },
