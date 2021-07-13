@@ -3,17 +3,17 @@
 Page({
   data: {
     grid: [
-      [0, 0, 0, 0, 0, 1, 0, 0, 1],
-      [0, 0, 1, 0, 0, 1, 0, 1, 0],
-      [0, 0, 0, 0, 0, 1, 1, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [0, 0, 0, 0, 0, 0, 1, 0, 0],
-      [0, 0, 0, 0, 1, 0, 0, 1, 1],
-      [0, 0, 0, 0, 0, 0, 0, 1, 0],
+      [1, 1, 1, 0, 1, 1, 1],
+      [1, 0, 1, 0, 0, 1, 1],
+      [1, 0, 0, 0, 0, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1],
     ],
     mouse: {
-      x: 5,
-      y: 4
+      x: 3,
+      y: 3
     },
     available_cell: [],
     feasible_path: [],
@@ -58,7 +58,11 @@ Page({
   onShow() {
     this.getNewPath()
 
+    this.findExitPoint();
     // this.playBgAudio()
+
+    this.findAvailablePaths();
+
   },
   onHide() {
     this.audioContext.stop()
@@ -69,7 +73,7 @@ Page({
     switch (true) {
       case pass < 3:
         passNumber = 7
-            break;
+        break;
       case 3 <= pass && pass < 6:
         passNumber = 8
         break;
@@ -158,9 +162,9 @@ Page({
       mouse: new_path
     })
   },
-  getNewPath() {
-    let mouse_x = this.data.mouse.x
-    let mouse_y = this.data.mouse.y
+  getAvailablePoints(x, y) {
+    let mouse_x = x
+    let mouse_y = y
     let { grid } = this.data
     let available_cell = [
       //left
@@ -182,7 +186,41 @@ Page({
       if (!grid[y][x]){
         feasible_path.push(cell)
       }
-      this.setData({feasible_path})
     }
+    return feasible_path;
+  },
+  getNewPath() {
+    this.setData({feasible_path: this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y)})
+  },
+  findExitPoint() {
+    let points = [];
+    for (let i = 0; i < this.data.grid[0].length; i++) {
+      if (this.data.grid[0][i] === 0) {
+        points.push({
+          x: i, y: 0
+        })
+      }
+      if (this.data.grid[this.data.grid.length - 1][[i]] === 0) {
+        points.push({
+          x: i, y: this.data.grid.length - 1
+        })
+      }
+    }
+    return points;
+  },
+  findAvailablePaths() {
+    let availablePoints = this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y);
+
+    let circlePoints = [];
+    for (const availablePoint of availablePoints) {
+      let p = this.getAvailablePoints(availablePoint.x, availablePoint.y);
+      console.group("--------------")
+      console.log(availablePoint)
+      console.log(p);
+      console.groupEnd();
+      circlePoints.push(...p);
+    }
+
+    // 去重
   }
 })
