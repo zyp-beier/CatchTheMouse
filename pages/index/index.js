@@ -1,5 +1,5 @@
 // index.js
-
+import shuffle from "../../utils/shuffle";
 Page({
   data: {
     grid: [
@@ -19,7 +19,7 @@ Page({
     feasible_path: [],
     time: '',
     timeLimit: 60,
-    task: ''
+    pass: 1
   },
   onLoad() {
     // 设置时间
@@ -36,13 +36,13 @@ Page({
     //   }
     //   console.log('未超时')
     // }, 1000)
-    // 设置坐标
-    this.setMouseCoordinate()
 
     // 设置地图
-    this.generateArray()
+    this.generateArray(this.data.pass)
 
-    console.log('刷新')
+    // 设置坐标
+    this.setMouseCoordinate()
+    console.log(this.data.mouse)
 
     //设置背景音乐
     const audioContext = wx.createInnerAudioContext();
@@ -56,60 +56,79 @@ Page({
     })
   },
   onShow() {
+    // 获取可用路径
     this.getNewPath()
 
     this.findExitPoint();
+
+    //循环背景音乐
     // this.playBgAudio()
 
-    this.findAvailablePaths();
+    // this.findAvailablePaths();
 
   },
   onHide() {
     this.audioContext.stop()
   },
-  // 生成数组
-  generateArray(pass = 12) {
+  // 生成二维数组
+  generateArray(pass = 1) {
     let passNumber
+    let percentageOccupancy   // 占用率
     switch (true) {
       case pass < 3:
+        percentageOccupancy = 40
         passNumber = 7
         break;
       case 3 <= pass && pass < 6:
+        percentageOccupancy = 40
         passNumber = 8
         break;
       case 9 > pass && pass >= 6:
+        percentageOccupancy = 30
         passNumber = 9
         break;
       case 12 > pass && pass >= 9:
+        percentageOccupancy = 20
         passNumber = 10
         break;
       case 15 > pass && pass >= 12:
+        percentageOccupancy = 10
         passNumber = 11
         break;
       default:
+        percentageOccupancy = 10
         passNumber = 12
     }
+    // 生成固定占位率的乱序数组
     let oneDimensional = new Array(passNumber)
+    let twoDimensional = new Array(passNumber)
+    let cn = Math.round(passNumber * (percentageOccupancy / 100))
+    for(let i = 0; i < oneDimensional.length; i++) {
+      for(let j = 0; j < twoDimensional.length; j++) {
+        j < cn ? twoDimensional[j] = 1 : twoDimensional[j] = 0
+      }
+      let _twoDimensional = shuffle(twoDimensional)
+      oneDimensional[i] = _twoDimensional
+    }
     console.log(oneDimensional)
-    // for(let i = 0; i < oneDimensional.length -1; i++ ) {
-    //
-    // }
+    this.setData({
+      grid: oneDimensional
+    })
   },
   setMouseCoordinate() {
-    let mouse = this.randomCoordinates()
-    let { x, y } = mouse
     let { grid } = this.data
+    let y = this.randomNumber(2, grid.length-3)
+    let x = this.randomNumber(2, grid[0].length-3)
+    let mouse = {x, y}
+    console.log(mouse)
     if (grid[y][x]) {
       this.setMouseCoordinate()
       return
     }
     this.setData({mouse})
   },
-  randomCoordinates() {
-    let {grid} = this.data
-    let x = Math.floor(Math.random() * (grid[0].length - 3) + 2)
-    let y = Math.floor(Math.random() * (grid.length - 3) + 2)
-    return {x, y}
+  randomNumber(min, max) {
+   return Math.floor(Math.random() * (max - min) + min)
   },
   playBgAudio(){
     this.data.audioContext.play()
@@ -118,15 +137,15 @@ Page({
     this.data.movingAudio.play();
   },
   handleClick(e) {
+    let {grid, mouse} = this.data
     const {x: tap_x, y: tap_y} = e.currentTarget.dataset
-    if (this.data.grid[tap_y][tap_x]) return;
+    if (grid[tap_y][tap_x] || (tap_x === mouse.x && tap_y === mouse.y)) return;
     this.playMovingAudio()
     this.setData({
       [`grid[${tap_y}][${tap_x}]`]: 1
     })
     this.getNewPath()
     const {feasible_path} = this.data
-    console.log(feasible_path)
     if (!feasible_path.length) {
       let _this = this
       wx.showModal({
@@ -135,9 +154,13 @@ Page({
         showCancel: false,
         confirmText: '下一关',
         success() {
+          _this.setData({
+            pass: _this.data.pass + 1
+          })
+          _this.generateArray(_this.data.pass)
+          _this.setMouseCoordinate()
         }
       })
-      console.log('you win')
       return
     }
     this.mouseRun()
@@ -208,19 +231,19 @@ Page({
     }
     return points;
   },
-  findAvailablePaths() {
-    let availablePoints = this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y);
-
-    let circlePoints = [];
-    for (const availablePoint of availablePoints) {
-      let p = this.getAvailablePoints(availablePoint.x, availablePoint.y);
-      console.group("--------------")
-      console.log(availablePoint)
-      console.log(p);
-      console.groupEnd();
-      circlePoints.push(...p);
-    }
-
-    // 去重
-  }
+//   findAvailablePaths() {
+//     let availablePoints = this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y);
+//
+//     let circlePoints = [];
+//     for (const availablePoint of availablePoints) {
+//       let p = this.getAvailablePoints(availablePoint.x, availablePoint.y);
+//       console.group("--------------")
+//       console.log(availablePoint)
+//       console.log(p);
+//       console.groupEnd();
+//       circlePoints.push(...p);
+//     }
+//
+//     // 去重
+//   }
 })
