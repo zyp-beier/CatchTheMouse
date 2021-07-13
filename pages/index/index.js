@@ -16,15 +16,35 @@ Page({
       y: 4
     },
     available_cell: [],
-    feasible_path: []
+    feasible_path: [],
+    time: '',
+    timeLimit: 60,
+    task: ''
   },
   onLoad() {
-    //设置坐标
+    // 设置时间
+    // this.setData({
+    //   time: Date.now()
+    // })
+    // let { time } = this.data
+    // let interval = setInterval(() => {
+    //   let pastTime = parseInt(time / 1000 )
+    //   let currentTime = parseInt(new Date().getTime() / 1000 )
+    //   if (currentTime - pastTime > 60) {
+    //     console.log('您已超时')
+    //     clearInterval(interval)
+    //   }
+    //   console.log('未超时')
+    // }, 1000)
+    // 设置坐标
     this.setMouseCoordinate()
 
+    // 设置地图
     this.generateArray()
+
     console.log('刷新')
 
+    //设置背景音乐
     const audioContext = wx.createInnerAudioContext();
     const movingAudio =  wx.createInnerAudioContext()
     audioContext.src = "/assets/audio/bg.mp3"
@@ -67,6 +87,9 @@ Page({
     }
     let oneDimensional = new Array(passNumber)
     console.log(oneDimensional)
+    // for(let i = 0; i < oneDimensional.length -1; i++ ) {
+    //
+    // }
   },
   setMouseCoordinate() {
     let mouse = this.randomCoordinates()
