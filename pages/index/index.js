@@ -15,7 +15,9 @@ Page({
     timeTaken: 0,   // 所用时间
     step: 0,
     pass: 1,
-    showModal: 1
+    score: 0,
+    totalScore: 0,
+    showModal: 0
   },
   onLoad(options) {
     // 地图
@@ -45,6 +47,9 @@ Page({
       timeTaken += 1
       if (timeTaken > timeLimit) {
         console.log('您已超时')
+        this.setData({
+          showModal: -2
+        })
         clearInterval(interval)
       }
       this.setData({
@@ -158,17 +163,11 @@ Page({
       let score = parseFloat(role.toFixed(2))
       app.globalData.totalScore += score
       let totalScore = app.globalData.totalScore || 0
-      wx.showModal({
-        title: `第${pass}关`,
-        content: `恭喜您获得${score}分,目前总得分${totalScore}分`,
-        showCancel: false,
-        confirmText: '下一关',
-        success() {
-          clearInterval(_this.data.interval)
-          wx.redirectTo({
-            url: `./index?pass=${_this.data.pass + 1}`
-          })
-        }
+      clearInterval(_this.data.interval)
+      this.setData({
+        score,
+        totalScore,
+        showModal: 1
       })
       return
     }
@@ -180,15 +179,6 @@ Page({
     let new_path = feasible_path[Math.floor(Math.random()*feasible_path.length)]
     let {x , y} = new_path
     if (grid.length - 1 === y || grid[0].length -1 === x || x === 0 || y === 0) {
-      // wx.showModal({
-      //   content: '分数 6.01',
-      //   showCancel: false,
-      //   confirmText: '再来一次',
-      //   success: () => {
-      //     console.log('再来一次')
-      //
-      //   }
-      // })
       this.setData({
         showModal: -1
       })
@@ -229,6 +219,14 @@ Page({
   },
   getNewPath() {
     this.setData({feasible_path: this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y)})
+  },
+
+  // 下一关
+  nextPass(e) {
+    let pass = e.currentTarget.dataset.pass || 1
+    wx.redirectTo({
+      url: `./index?pass=${pass}`
+    })
   },
 
   // 重置

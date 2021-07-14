@@ -20,13 +20,36 @@
     </view>
   </view>
   <view  class="model" wx:if="{{showModal}}">
-    <view wx:if="{{showModal > 0}}" class="modal-bg">
-      <view style="background: url('../../assets/img/success.png')">
-        1234123412341243
+    <view wx:if="{{showModal > 0}}">
+      <view class="modal-bg" style="background: url('../../assets/img/success.png'); background-size: cover">
+        <view class="modal-pass">第{{pass}}关</view>
+        <view class="modal-score">恭喜您获得{{score}}分</view>
+        <view>本关消耗步数: {{step}}步</view>
+        <view>本关消耗时间: {{timeTaken}}秒</view>
+        <view>目前总得分: {{totalScore}}</view>
       </view>
-      <view>下一关</view>
+      <view class="next-pass" bindtap="nextPass" data-pass="{{pass + 1}}">下一关</view>
     </view>
-    <view wx:else>失败</view>
+    <view wx:elif="{{showModal === -1}}">
+      <view>
+        <view class="modal-bg" style="background: url('../../assets/img/success.png'); background-size: cover">
+          <view class="modal-pass">第{{pass}}关</view>
+          <view class="modal-score">很遗憾,挑战失败</view>
+          <view>目前总得分: {{totalScore}}</view>
+        </view>
+        <view class="next-pass" bindtap="nextPass" >再试一次</view>
+      </view>
+    </view>
+    <view wx:else>
+      <view>
+        <view class="modal-bg" style="background: url('../../assets/img/success.png'); background-size: cover">
+          <view class="modal-pass">第{{pass}}关</view>
+          <view class="modal-score">您已超时</view>
+          <view>目前总得分: {{totalScore}}</view>
+        </view>
+        <view class="next-pass" bindtap="nextPass" >再试一次</view>
+      </view>
+    </view>
   </view>
 </view>
 
