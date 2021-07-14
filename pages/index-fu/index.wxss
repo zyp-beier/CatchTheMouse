@@ -1,36 +1,44 @@
 .container {
-
+  height: 100vh;
+  position: relative;
 }
 .wrap {
-  width: 80%;
-  margin: 100rpx auto 0 auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 .list {
   display: flex;
   align-items: center;
-  margin-top: -10rpx;
-}
-.item {
-  width: 60rpx;
-  height: 60rpx;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  overflow: hidden;
+  /*margin-top: -10rpx;*/
 }
 .even {
-  margin-left: 30rpx;
+  margin-left: 35rpx;
+}
+.item {
+  margin-left: 15rpx;
+  width: 70rpx;
+  height: 70rpx;
+}
+.item image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
-.trick{
-  background-color: #3b3939;
-  height: 100%;
-}
+.model {
+  position: absolute;
+  top: 0;
 
-.mouse{
-  background-color: #702bbf;
-  height: 100%;
-}
-.path{
-  background-color: #73a373;
-  height: 100%;
+  /*width: 100%;*/
+  /*height: 100vh;*/
+  /*z-index: 99;*/
+  /*background-color: rgba(255, 255, 255, .5);*/
+  background-color: #050505;
 }

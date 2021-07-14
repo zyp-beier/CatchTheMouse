@@ -3,4 +3,7 @@ App({
   onLaunch() {
 
   },
+  globalData: {
+    totalScore: 0
+  }
 })

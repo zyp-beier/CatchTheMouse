@@ -1,5 +1,6 @@
 // index.js
 import shuffle from "../../utils/shuffle";
+let app = getApp()
 Page({
   data: {
     grid: [],
@@ -12,14 +13,13 @@ Page({
     interval: '', // 定时器
     timeLimit: 60,  // 限时
     timeTaken: 0,   // 所用时间
-    pass: 1
+    step: 0,
+    pass: 1,
+    showModal: 1
   },
   onLoad(options) {
     // 地图
     let pass = parseInt(options.pass) || 1
-    this.setData({
-      pass
-    })
     this.generateArray(pass)
 
     // 设置坐标
@@ -33,7 +33,7 @@ Page({
 
     movingAudio.src = "/assets/audio/move.mp3"
     this.setData({
-      audioContext, movingAudio
+      audioContext, movingAudio, pass
     })
   },
   onShow() {
@@ -50,7 +50,6 @@ Page({
       this.setData({
         timeTaken
       })
-      console.log(this.data.timeTaken)
     }, 1000)
     this.setData({
       interval
@@ -71,7 +70,7 @@ Page({
     this.data.audioContext.stop()
     clearInterval(this.data.interval)
   },
-  // 生成二维数组
+  // 生成地图
   generateArray(pass = 1) {
     let passNumber
     let percentageOccupancy   // 占用率
@@ -100,7 +99,7 @@ Page({
         percentageOccupancy = 10
         passNumber = 12
     }
-    // 生成固定占位率的乱序数组
+    // 生成固定占位率的乱序二维数组
     let oneDimensional = new Array(passNumber)
     let twoDimensional = new Array(passNumber)
     let cn = Math.round(passNumber * (percentageOccupancy / 100))
@@ -111,47 +110,57 @@ Page({
       let _twoDimensional = shuffle(twoDimensional)
       oneDimensional[i] = _twoDimensional
     }
-    console.log(oneDimensional)
     this.setData({
       grid: oneDimensional
     })
   },
+
+  // 设置坐标
   setMouseCoordinate() {
     let { grid } = this.data
     let y = this.randomNumber(2, grid.length-3)
     let x = this.randomNumber(2, grid[0].length-3)
     let mouse = {x, y}
-    console.log(mouse)
     if (grid[y][x]) {
       this.setMouseCoordinate()
       return
     }
     this.setData({mouse})
   },
+
   randomNumber(min, max) {
    return Math.floor(Math.random() * (max - min) + min)
   },
+
   playBgAudio(){
     this.data.audioContext.play()
   },
+
   playMovingAudio() {
     this.data.movingAudio.play();
   },
+
   handleClick(e) {
     let {grid, mouse} = this.data
     const {x: tap_x, y: tap_y} = e.currentTarget.dataset
     if (grid[tap_y][tap_x] || (tap_x === mouse.x && tap_y === mouse.y)) return;
     this.playMovingAudio()
     this.setData({
-      [`grid[${tap_y}][${tap_x}]`]: 1
+      [`grid[${tap_y}][${tap_x}]`]: 1,
+      step: this.data.step + 1
     })
     this.getNewPath()
     const {feasible_path} = this.data
     if (!feasible_path.length) {
       let _this = this
+      let { pass, step, timeTaken } = _this.data
+      let role = (100 - step - timeTaken + (pass / 10)) / 15
+      let score = parseFloat(role.toFixed(2))
+      app.globalData.totalScore += score
+      let totalScore = app.globalData.totalScore || 0
       wx.showModal({
-        title: 'you win',
-        content: '恭喜您获得100分',
+        title: `第${pass}关`,
+        content: `恭喜您获得${score}分,目前总得分${totalScore}分`,
         showCancel: false,
         confirmText: '下一关',
         success() {
@@ -165,19 +174,23 @@ Page({
     }
     this.mouseRun()
   },
+
   mouseRun() {
     let { feasible_path, grid } = this.data
     let new_path = feasible_path[Math.floor(Math.random()*feasible_path.length)]
     let {x , y} = new_path
     if (grid.length - 1 === y || grid[0].length -1 === x || x === 0 || y === 0) {
-      wx.showModal({
-        content: '分数 6.01',
-        showCancel: false,
-        confirmText: '再来一次',
-        success: () => {
-          console.log('再来一次')
-
-        }
+      // wx.showModal({
+      //   content: '分数 6.01',
+      //   showCancel: false,
+      //   confirmText: '再来一次',
+      //   success: () => {
+      //     console.log('再来一次')
+      //
+      //   }
+      // })
+      this.setData({
+        showModal: -1
       })
       return
     }
@@ -185,6 +198,8 @@ Page({
       mouse: new_path
     })
   },
+
+  // 获取可用路径
   getAvailablePoints(x, y) {
     let mouse_x = x
     let mouse_y = y
@@ -215,6 +230,12 @@ Page({
   getNewPath() {
     this.setData({feasible_path: this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y)})
   },
+
+  // 重置
+  again() {
+
+  },
+
   findExitPoint() {
     let points = [];
     for (let i = 0; i < this.data.grid[0].length; i++) {
