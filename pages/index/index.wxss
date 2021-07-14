@@ -8,12 +8,13 @@
 .list {
   display: flex;
   align-items: center;
-  margin-top: -10rpx;
+  /*margin-top: -10rpx;*/
 }
 .even {
-  margin-left: 30rpx;
+  margin-left: 35rpx;
 }
 .item {
+  margin-left: 15rpx;
   width: 70rpx;
   height: 70rpx;
 }

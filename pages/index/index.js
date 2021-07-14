@@ -2,47 +2,28 @@
 import shuffle from "../../utils/shuffle";
 Page({
   data: {
-    grid: [
-      [1, 1, 1, 0, 1, 1, 1],
-      [1, 0, 1, 0, 0, 1, 1],
-      [1, 0, 0, 0, 0, 1, 1],
-      [0, 0, 0, 0, 0, 0, 0],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 1, 1],
-    ],
+    grid: [],
     mouse: {
       x: 3,
       y: 3
     },
     available_cell: [],
     feasible_path: [],
-    time: '',
-    timeLimit: 60,
+    interval: '', // 定时器
+    timeLimit: 60,  // 限时
+    timeTaken: 0,   // 所用时间
     pass: 1
   },
-  onLoad() {
-    // 设置时间
-    // this.setData({
-    //   time: Date.now()
-    // })
-    // let { time } = this.data
-    // let interval = setInterval(() => {
-    //   let pastTime = parseInt(time / 1000 )
-    //   let currentTime = parseInt(new Date().getTime() / 1000 )
-    //   if (currentTime - pastTime > 60) {
-    //     console.log('您已超时')
-    //     clearInterval(interval)
-    //   }
-    //   console.log('未超时')
-    // }, 1000)
-
-    // 设置地图
-    this.generateArray(this.data.pass)
+  onLoad(options) {
+    // 地图
+    let pass = parseInt(options.pass) || 1
+    this.setData({
+      pass
+    })
+    this.generateArray(pass)
 
     // 设置坐标
     this.setMouseCoordinate()
-    console.log(this.data.mouse)
 
     //设置背景音乐
     const audioContext = wx.createInnerAudioContext();
@@ -56,6 +37,25 @@ Page({
     })
   },
   onShow() {
+    // 设置时间
+    let { timeLimit } = this.data
+    let timeTaken = 0
+    clearInterval(this.data.interval)
+    let interval = setInterval(() => {
+      timeTaken += 1
+      if (timeTaken > timeLimit) {
+        console.log('您已超时')
+        clearInterval(interval)
+      }
+      this.setData({
+        timeTaken
+      })
+      console.log(this.data.timeTaken)
+    }, 1000)
+    this.setData({
+      interval
+    })
+
     // 获取可用路径
     this.getNewPath()
 
@@ -68,7 +68,8 @@ Page({
 
   },
   onHide() {
-    this.audioContext.stop()
+    this.data.audioContext.stop()
+    clearInterval(this.data.interval)
   },
   // 生成二维数组
   generateArray(pass = 1) {
@@ -154,11 +155,10 @@ Page({
         showCancel: false,
         confirmText: '下一关',
         success() {
-          _this.setData({
-            pass: _this.data.pass + 1
+          clearInterval(_this.data.interval)
+          wx.redirectTo({
+            url: `./index?pass=${_this.data.pass + 1}`
           })
-          _this.generateArray(_this.data.pass)
-          _this.setMouseCoordinate()
         }
       })
       return
