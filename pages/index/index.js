@@ -130,7 +130,8 @@ Page({
     let y = this.randomNumber(2, grid.length-3)
     let x = this.randomNumber(2, grid[0].length-3)
     let mouse = {x, y}
-    if (grid[y][x]) {
+    let path = this.getAvailablePoints(x,y).length
+    if (grid[y][x] || path < 2) {
       this.setMouseCoordinate()
       return
     }
