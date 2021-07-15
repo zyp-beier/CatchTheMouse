@@ -2,25 +2,24 @@
 <view class="container" style="background: url('../../assets/img/bg.png'); background-size: cover">
   <view class="progress {{progress_start ? 'active' : ''}}"></view>
   <view class="wrap">
-    <view>
-      <view class="list {{cell_y % 2 === 1 ? 'even' : '' }}" wx:for="{{grid}}" wx:key="cell_y"
-            wx:for-index="cell_y"
+    <view class="list {{cell_y % 2 === 1 ? 'even' : '' }}" wx:for="{{grid}}" wx:key="cell_y"
+          wx:for-index="cell_y"
+    >
+      <view wx:for="{{item}}" wx:key='cell_x'
+            style="height:{{grid.length >= 8 ? (grid.length > 9 ? (grid.length > 10 ? 44 : 50) : 56) : 70}}rpx"
+            class="item" bindtap='handleClick'
+            data-x="{{cell_x}}"
+            data-y="{{cell_y}}"
+            wx:for-item="cell"
+            wx:for-index="cell_x"
       >
-        <view wx:for="{{item}}" wx:key='cell_x'
-              class="item" bindtap='handleClick'
-              data-x="{{cell_x}}"
-              data-y="{{cell_y}}"
-              wx:for-item="cell"
-              wx:for-index="cell_x"
-        >
-          <image wx:if="{{cell === 0 && mouse.x === cell_x && mouse.y === cell_y }}" src="../../assets/img/mouse.png"></image>
-          <image wx:elif="{{cell === 1}}" src="../../assets/img/occupy.png" ></image>
-          <image wx:else src="../../assets/img/lattice.png" ></image>
-        </view>
+        <image wx:if="{{cell === 0 && mouse.x === cell_x && mouse.y === cell_y }}" src="../../assets/img/mouse.png"></image>
+        <image wx:elif="{{cell === 1}}" src="../../assets/img/occupy.png" ></image>
+        <image wx:else src="../../assets/img/lattice.png" ></image>
       </view>
     </view>
   </view>
-  <view  class="model" wx:if="{{showModal}}">
+  <view class="model" wx:if="{{showModal}}">
     <view wx:if="{{showModal > 0}}">
       <view class="modal-bg" style="background: url('../../assets/img/success.png'); background-size: cover">
         <view class="modal-pass">第{{pass}}关</view>

@@ -44,25 +44,25 @@ Page({
       progress_start: true
     })
     // 设置时间
-    let { timeLimit } = this.data
-    let timeTaken = 0
-    clearInterval(this.data.interval)
-    let interval = setInterval(() => {
-      timeTaken += 1
-      if (timeTaken > timeLimit) {
-        console.log('您已超时')
-        this.setData({
-          showModal: -2
-        })
-        clearInterval(interval)
-      }
-      this.setData({
-        timeTaken
-      })
-    }, 1000)
-    this.setData({
-      interval
-    })
+    // let { timeLimit } = this.data
+    // let timeTaken = 0
+    // clearInterval(this.data.interval)
+    // let interval = setInterval(() => {
+    //   timeTaken += 1
+    //   if (timeTaken > timeLimit) {
+    //     console.log('您已超时')
+    //     this.setData({
+    //       showModal: -2
+    //     })
+    //     clearInterval(interval)
+    //   }
+    //   this.setData({
+    //     timeTaken
+    //   })
+    // }, 1000)
+    // this.setData({
+    //   interval
+    // })
 
     // 获取可用路径
     this.getNewPath()
@@ -166,7 +166,7 @@ Page({
       let role = (100 - step - timeTaken + (pass / 10)) / 15
       let score = parseFloat(role.toFixed(2))
       app.globalData.totalScore += score
-      let totalScore = app.globalData.totalScore || 0
+      let totalScore = parseFloat(app.globalData.totalScore.toFixed(2)) || 0
       clearInterval(_this.data.interval)
       this.setData({
         score,
@@ -182,15 +182,15 @@ Page({
     let { feasible_path, grid } = this.data
     let new_path = feasible_path[Math.floor(Math.random()*feasible_path.length)]
     let {x , y} = new_path
-    if (grid.length - 1 === y || grid[0].length -1 === x || x === 0 || y === 0) {
-      this.setData({
-        showModal: -1
-      })
-      return
-    }
     this.setData({
       mouse: new_path
     })
+    if (grid.length - 1 === y || grid[0].length -1 === x || x === 0 || y === 0) {
+      clearInterval(this.data.interval)
+      this.setData({
+        showModal: -1
+      })
+    }
   },
 
   // 获取可用路径

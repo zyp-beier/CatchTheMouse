@@ -2,6 +2,7 @@
   height: 100vh;
   position: relative;
 }
+
 .progress {
   height: 8rpx;
   background-color: #fad46e;
@@ -9,37 +10,34 @@
   transition: width 60s linear;
   border-radius: 25rpx;
 }
-
 .progress.active{
   width: 0;
 }
+
 .wrap {
+  width: 650rpx;
+  height: 650rpx;
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  margin: auto;
 }
 .list {
-  /*width: 720rpx;*/
+  width: 100%;
   display: flex;
   align-items: center;
-  /*margin: 0 auto;*/
-  /*margin-top: -10rpx;*/
+  margin-left: -20rpx;
 }
 .even {
-  margin-left: 35rpx;
+  margin-left: 20rpx;
 }
 .item {
-  /*margin-left: 15rpx;*/
-  /*flex: 1;*/
-  /*height: calc(width);*/
-  width: 70rpx;
-  height: 70rpx;
+  margin: 5rpx 10rpx;
+  flex: 1;
+  width: 100%;
+  height: 60rpx;
 }
 .item image {
   width: 100%;
@@ -55,16 +53,11 @@
   bottom: 0;
   z-index: 99;
   background-color: rgba(0, 0, 0, .9);
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 .modal-bg {
   height: 500rpx;
   width: 86%;
-  margin: 0 auto;
+  margin: 200rpx auto 0 auto;
   text-align: center;
   color: #fff;
   font-size: 26rpx;
