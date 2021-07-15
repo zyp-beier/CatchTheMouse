@@ -1,5 +1,6 @@
 <!--index.wxml-->
 <view class="container" style="background: url('../../assets/img/bg.png'); background-size: cover">
+  <view class="progress {{progress_start ? 'active' : ''}}"></view>
   <view class="wrap">
     <view>
       <view class="list {{cell_y % 2 === 1 ? 'even' : '' }}" wx:for="{{grid}}" wx:key="cell_y"

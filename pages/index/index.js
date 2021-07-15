@@ -17,7 +17,8 @@ Page({
     pass: 1,
     score: 0,
     totalScore: 0,
-    showModal: 0
+    showModal: 0,
+    progress_start: false
   },
   onLoad(options) {
     // 地图
@@ -39,6 +40,9 @@ Page({
     })
   },
   onShow() {
+    this.setData({
+      progress_start: true
+    })
     // 设置时间
     let { timeLimit } = this.data
     let timeTaken = 0
@@ -227,11 +231,6 @@ Page({
     wx.redirectTo({
       url: `./index?pass=${pass}`
     })
-  },
-
-  // 重置
-  again() {
-
   },
 
   findExitPoint() {

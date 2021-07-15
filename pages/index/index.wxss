@@ -2,6 +2,17 @@
   height: 100vh;
   position: relative;
 }
+.progress {
+  height: 8rpx;
+  background-color: #fad46e;
+  width: 100%;
+  transition: width 60s linear;
+  border-radius: 25rpx;
+}
+
+.progress.active{
+  width: 0;
+}
 .wrap {
   position: absolute;
   top: 0;
@@ -14,15 +25,19 @@
   align-items: center;
 }
 .list {
+  /*width: 720rpx;*/
   display: flex;
   align-items: center;
+  /*margin: 0 auto;*/
   /*margin-top: -10rpx;*/
 }
 .even {
   margin-left: 35rpx;
 }
 .item {
-  margin-left: 15rpx;
+  /*margin-left: 15rpx;*/
+  /*flex: 1;*/
+  /*height: calc(width);*/
   width: 70rpx;
   height: 70rpx;
 }
