@@ -67,7 +67,8 @@ Page({
     // 获取可用路径
     this.getNewPath()
 
-    this.findExitPoint();
+    // this.findExitPoint();   // 寻找出口
+    console.log(this.findExitPoint())
 
     //循环背景音乐
     // this.playBgAudio()
@@ -236,19 +237,36 @@ Page({
 
   findExitPoint() {
     let points = [];
-    for (let i = 0; i < this.data.grid[0].length; i++) {
-      if (this.data.grid[0][i] === 0) {
+    let {grid} = this.data
+    for (let i = 0; i < grid.length; i++) {
+      if (!grid[0][i]) {
         points.push({
-          x: i, y: 0
+          x: i,
+          y: 0
         })
       }
-      if (this.data.grid[this.data.grid.length - 1][[i]] === 0) {
+      if (!grid[grid.length-1][i]) {
         points.push({
-          x: i, y: this.data.grid.length - 1
+          x: i,
+          y: grid.length-1
         })
+      }
+      if (grid.length - 1 > i && i > 0) {
+        if (!grid[i][0]) {
+          points.push({
+            x: grid[i][0],
+            y: i
+          })
+        }
+        if (!grid[i][grid.length - 1]) {
+          points.push({
+            x: grid.length - 1,
+            y: i
+          })
+        }
       }
     }
-    return points;
+   return points
   },
 //   findAvailablePaths() {
 //     let availablePoints = this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y);
