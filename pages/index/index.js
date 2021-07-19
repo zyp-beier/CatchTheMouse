@@ -44,31 +44,31 @@ Page({
       progress_start: true
     })
     // 设置时间
-    // let { timeLimit } = this.data
-    // let timeTaken = 0
-    // clearInterval(this.data.interval)
-    // let interval = setInterval(() => {
-    //   timeTaken += 1
-    //   if (timeTaken > timeLimit) {
-    //     console.log('您已超时')
-    //     this.setData({
-    //       showModal: -2
-    //     })
-    //     clearInterval(interval)
-    //   }
-    //   this.setData({
-    //     timeTaken
-    //   })
-    // }, 1000)
-    // this.setData({
-    //   interval
-    // })
+    let { timeLimit } = this.data
+    let timeTaken = 0
+    clearInterval(this.data.interval)
+    let interval = setInterval(() => {
+      timeTaken += 1
+      if (timeTaken > timeLimit) {
+        console.log('您已超时')
+        this.setData({
+          showModal: -2
+        })
+        clearInterval(interval)
+      }
+      this.setData({
+        timeTaken
+      })
+    }, 1000)
+    this.setData({
+      interval
+    })
 
     // 获取可用路径
     this.getNewPath()
 
     // this.findExitPoint();   // 寻找出口
-    console.log(this.findExitPoint())
+    // console.log(this.findExitPoint())
 
     //循环背景音乐
     // this.playBgAudio()
