@@ -163,13 +163,12 @@ Page({
     this.getNewPath()
     const {feasible_path} = this.data
     if (!feasible_path.length) {
-      let _this = this
-      let { pass, step, timeTaken } = _this.data
+      let { pass, step, timeTaken } = this.data
       let role = (100 - step - timeTaken + (pass / 10)) / 15
       let score = parseFloat(role.toFixed(2))
       app.globalData.totalScore += score
       let totalScore = parseFloat(app.globalData.totalScore.toFixed(2)) || 0
-      clearInterval(_this.data.interval)
+      clearInterval(this.data.interval)
       this.setData({
         score,
         totalScore,
