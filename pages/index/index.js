@@ -36,13 +36,13 @@ Page({
       [1, 1, 0, 0, 0, 1],
     ],
     mouse: {
-      x: 3,
+      x: 2,
       y: 3
     },
     available_cell: [],
     feasible_path: [],
     interval: '', // 定时器
-    timeLimit: 60,  // 限时
+    timeLimit: 6000,  // 限时
     timeTaken: 0,   // 所用时间
     step: 0,
     pass: 1,
@@ -57,7 +57,7 @@ Page({
     // this.generateArray(pass)
 
     // 设置坐标
-    this.setMouseCoordinate()
+    // this.setMouseCoordinate()
 
     //设置背景音乐
     const audioContext = wx.createInnerAudioContext();
@@ -209,7 +209,38 @@ Page({
   },
 
   mouseRun() {
-    let { feasible_path, grid } = this.data
+    let paths = this.findAvailablePaths();
+    console.log('paths', paths)
+
+    // 有出口, 选择路径最短的出口
+    let min_point_path;
+    for (const path of paths) {
+      if (!min_point_path) {
+        min_point_path = path;
+        continue;
+      }
+      if (path.length < min_point_path.length) {
+        min_point_path = path;
+      }
+    }
+
+    if (min_point_path) {
+      console.log('min point path', min_point_path)
+      // 选取下一个点
+      let nextPoint = min_point_path.find(item => item.p && item.p.x === this.data.mouse.x && item.p.y === this.data.mouse.y);
+      console.log('next point', nextPoint);
+      if (nextPoint) {
+        // ok
+        this.setData({
+          mouse: {x: nextPoint.x, y: nextPoint.y}
+        })
+        return;
+      }
+    }
+    return;
+
+
+    let { feasible_path, grid } = this.data;
     let new_path = feasible_path[Math.floor(Math.random()*feasible_path.length)]
     let {x , y} = new_path
     this.setData({
@@ -225,24 +256,31 @@ Page({
 
   // 获取可用路径
   getAvailablePoints(x, y) {
-    let mouse_x = x
-    let mouse_y = y
     let { grid } = this.data
-    let available_cell = [
-      //left
-      mouse_x > 0 && {x: mouse_x - 1, y: mouse_y},
-      //right
-      mouse_x < grid[0].length - 1 && {x: mouse_x + 1, y: mouse_y},
-      // bottom-left
-      mouse_y < grid.length - 1 && {x: mouse_x, y: mouse_y + 1},
-      // bottom-right
-      mouse_y > 0 && (mouse_y % 2 === 0 ? {x: mouse_x - 1, y: mouse_y + 1} : {x: mouse_x + 1, y: mouse_y + 1}),
-      // top-left
-      mouse_y > 0 && {x: mouse_x, y: mouse_y - 1},
-      // top-right
-      mouse_y > 0 && (mouse_y % 2 === 0 ? {x: mouse_x - 1, y: mouse_y - 1}: {x: mouse_x + 1, y: mouse_y -1})
-    ];
-    let feasible_path = []
+    let available_cell = [];
+    if (x > 0) available_cell.push({x: x - 1, y: y})
+    if (x < grid[0].length - 1) available_cell.push({x: x + 1, y: y})
+    if (y % 2 === 1) {
+      // 偶数行
+      // left top
+      y > 0 && available_cell.push({x: x, y: y - 1});
+      // right top
+      y > 0 && x < grid[0].length - 1 && available_cell.push({x: x + 1, y: y - 1});
+      // left bottom
+      y < grid.length - 1 && available_cell.push({x: x, y: y + 1});
+      // right bottom
+      y < grid.length - 1 && x < grid[0].length - 1 && available_cell.push({x: x + 1, y: y + 1});
+    } else {
+      // left top
+      x > 0 && y > 0 && available_cell.push({x: x - 1, y: y - 1})
+      // right top
+      y > 0 && available_cell.push({x: x, y: y - 1})
+      // left bottom
+      x > 0 && y < grid.length - 1 && available_cell.push({x: x - 1, y: y + 1})
+      // right bottom
+      y < grid.length - 1 && available_cell.push({x: x, y: y + 1})
+    }
+    let feasible_path = [];
     for (const cell of available_cell) {
       let {x, y} = cell
       if (!grid[y][x]){
@@ -250,6 +288,7 @@ Page({
         feasible_path.push(p)
       }
     }
+    console.log(feasible_path);
     return feasible_path;
   },
   getNewPath() {
@@ -280,49 +319,66 @@ Page({
   },
 
   findAvailablePaths() {
-    this.findExitPoint();   // 寻找出口
-
-    let close_list = [], open_list = [];
-    let p = new Point(this.data.mouse.x, this.data.mouse.y);
-    p.calcHGF(new Point(this.data.mouse.x, this.data.mouse.y), new Point(5, 4));
-    open_list.push(p);
-
-    // while (open_list.length) {
-    let timer = setInterval(() => {
-      let temp_start_point = this.getMinHFromOpenList(open_list);
-      console.log('temp_start_point', temp_start_point)
-      this.setData({
-        mouse: {x: temp_start_point.x, y: temp_start_point.y}
-      })
-
-      if (temp_start_point.x === 5 && temp_start_point.y === 4) {
-        clearInterval(timer);
+    let ends = this.findExitPoint();   // 寻找出口
+    let paths = [];
+    for (const end of ends) {
+      let path = this.a_star_path(new Point(this.data.mouse.x, this.data.mouse.y), end);
+      if (path) {
+        paths.push(path);
       }
-      this.removePointFromOpenList(temp_start_point, open_list);
-      close_list.push(temp_start_point);
-      let around_points = this.getAvailablePoints(this.data.mouse.x, this.data.mouse.y);
-      console.log(around_points)
-      for (const point of around_points) {
-        if (open_list.findIndex(item => item.x === point.x && item.y === point.y) === -1) { // 不在open list
-          console.log('point not in open list')
-          point.calcHGF(new Point(this.data.mouse.x, this.data.mouse.y), new Point(5, 4));
-          point.setParent(temp_start_point);
-          open_list.push(point)
-          console.log(open_list)
-        } else {
-          if (point.f < temp_start_point.f) {
+    }
+    return [...paths];
+  },
+
+  a_star_path(start, end) {
+    start = new Point(this.data.mouse.x, this.data.mouse.y)
+    let close_list = [];
+    let open_list = [];
+    start.calcHGF(start, end);
+    open_list.push(start);
+
+    let i = 0
+
+    // setInterval(() => {
+      while (open_list.length && i < 50) {
+        let temp_start_point = this.getMinHFromOpenList(open_list);
+
+        // this.setData({
+        //   mouse: {...temp_start_point}
+        // })
+
+        if (temp_start_point.x === end.x && temp_start_point.y === end.y) {
+          let path = [];
+          open_list.map(item => {
+            if (item.p && path.indexOf(item.p) === -1) {
+              path.push(item.p);
+            }
+          })
+          path.push(temp_start_point)
+          return path;
+        }
+
+        this.removePointFromOpenList(temp_start_point, open_list);
+        close_list.push(temp_start_point);
+        let around_points = this.getAvailablePoints(temp_start_point.x, temp_start_point.y);
+        for (const point of around_points) {
+          if (close_list.findIndex(item => item.x === point.x && item.y === point.y) !== -1) continue;
+
+          point.calcHGF(new Point(this.data.mouse.x, this.data.mouse.y), end);
+
+          if (open_list.findIndex(item => item.x === point.x && item.y === point.y) === -1) { // 不在open list
             point.setParent(temp_start_point);
+            open_list.push(point)
+          } else {
+            if (point.f < temp_start_point.f) {
+              point.setParent(temp_start_point);
+            }
           }
         }
+
+        i++
       }
-
-
-
-    }, 500)
-
-    // }
-
-
+    // }, 1000)
 
   },
 
@@ -336,7 +392,7 @@ Page({
         continue;
       }
 
-      if ( cp.f < point.f) {
+      if ( cp.f <= point.f) {
         point = cp;
       }
     }
