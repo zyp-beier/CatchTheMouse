@@ -15,7 +15,10 @@
       >
         <image wx:if="{{cell === 0 && mouse.x === cell_x && mouse.y === cell_y }}" src="../../assets/img/mouse.png"></image>
         <image wx:elif="{{cell === 1}}" src="../../assets/img/occupy.png" ></image>
-        <image wx:else src="../../assets/img/lattice.png" ></image>
+        <view style="width: 100%; height: 100%" wx:else>
+          <view style="position: absolute;">{{cell_x}},{{cell_y}}</view>
+          <image src="../../assets/img/lattice.png"></image>
+        </view>
       </view>
     </view>
   </view>
