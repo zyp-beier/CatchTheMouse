@@ -10,7 +10,7 @@ class Point {
   }
 
   setParent(p) {
-    this.p = p;
+    this.p = p
   }
 
   calcHGF(start, end) {
@@ -30,8 +30,8 @@ Page({
       [1, 1, 0, 1, 1, 1],
       [1, 1, 0, 0, 1, 1],
       [1, 1, 0, 0, 0, 1],
-      [1, 1, 1, 0, 0, 0],
-      [1, 1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 0],
+      [1, 1, 0, 0, 1, 1],
       [1, 1, 0, 0, 1, 1],
       [1, 1, 0, 0, 0, 1],
     ],
@@ -185,32 +185,33 @@ Page({
     const {x: tap_x, y: tap_y} = e.currentTarget.dataset
     if (grid[tap_y][tap_x] || (tap_x === mouse.x && tap_y === mouse.y)) return;
     this.playMovingAudio()
+
+    console.log('tap: %d, %d', tap_x, tap_y)
     this.setData({
       [`grid[${tap_y}][${tap_x}]`]: 1,
       step: this.data.step + 1
     })
-    this.getNewPath()
-    const {feasible_path} = this.data
-    if (!feasible_path.length) {
-      let { pass, step, timeTaken } = this.data
-      let role = (100 - step - timeTaken + (pass / 10)) / 15
-      let score = parseFloat(role.toFixed(2))
-      app.globalData.totalScore += score
-      let totalScore = parseFloat(app.globalData.totalScore.toFixed(2)) || 0
-      clearInterval(this.data.interval)
-      this.setData({
-        score,
-        totalScore,
-        showModal: 1
-      })
-      return
-    }
+    // this.getNewPath()
+    // const {feasible_path} = this.data
+    // if (!feasible_path.length) {
+    //   let { pass, step, timeTaken } = this.data
+    //   let role = (100 - step - timeTaken + (pass / 10)) / 15
+    //   let score = parseFloat(role.toFixed(2))
+    //   app.globalData.totalScore += score
+    //   let totalScore = parseFloat(app.globalData.totalScore.toFixed(2)) || 0
+    //   clearInterval(this.data.interval)
+    //   this.setData({
+    //     score,
+    //     totalScore,
+    //     showModal: 1
+    //   })
+    //   return
+    // }
     this.mouseRun()
   },
 
   mouseRun() {
     let paths = this.findAvailablePaths();
-    console.log('paths', paths)
 
     // 有出口, 选择路径最短的出口
     let min_point_path;
@@ -225,7 +226,8 @@ Page({
     }
 
     if (min_point_path) {
-      console.log('min point path', min_point_path)
+      console.log('shortest path:');
+      this.buildPath(min_point_path);
       // 选取下一个点
       let nextPoint = min_point_path.find(item => item.p && item.p.x === this.data.mouse.x && item.p.y === this.data.mouse.y);
       console.log('next point', nextPoint);
@@ -237,6 +239,8 @@ Page({
         return;
       }
     }
+
+    console.warn("无可用路径，随机跑")
     return;
 
 
@@ -288,7 +292,6 @@ Page({
         feasible_path.push(p)
       }
     }
-    console.log(feasible_path);
     return feasible_path;
   },
   getNewPath() {
@@ -324,6 +327,7 @@ Page({
     for (const end of ends) {
       let path = this.a_star_path(new Point(this.data.mouse.x, this.data.mouse.y), end);
       if (path) {
+        this.outputPath(path);
         paths.push(path);
       }
     }
@@ -331,8 +335,18 @@ Page({
   },
 
   a_star_path(start, end) {
-    start = new Point(this.data.mouse.x, this.data.mouse.y)
     let close_list = [];
+
+    // init close list
+    for (let j = 0; j < this.data.grid.length; j++) {
+      for (let k = 0; k < this.data.grid[j].length; k++) {
+        if (this.data.grid[j][k] === 1) {
+          if (close_list.findIndex(item => item.x === k && item.y === j) !== -1) continue;
+          close_list.push(new Point(k, j))
+        }
+      }
+    }
+
     let open_list = [];
     start.calcHGF(start, end);
     open_list.push(start);
@@ -348,14 +362,13 @@ Page({
         // })
 
         if (temp_start_point.x === end.x && temp_start_point.y === end.y) {
-          let path = [];
-          open_list.map(item => {
-            if (item.p && path.indexOf(item.p) === -1) {
-              path.push(item.p);
-            }
-          })
-          path.push(temp_start_point)
-          return path;
+          return this.buildPath(temp_start_point, start);
+          // open_list.map(item => {
+          //   if (item.p && path.indexOf(item.p) === -1) {
+          //     path.push(item.p);
+          //   }
+          // })
+          // path.push(temp_start_point)
         }
 
         this.removePointFromOpenList(temp_start_point, open_list);
@@ -364,7 +377,7 @@ Page({
         for (const point of around_points) {
           if (close_list.findIndex(item => item.x === point.x && item.y === point.y) !== -1) continue;
 
-          point.calcHGF(new Point(this.data.mouse.x, this.data.mouse.y), end);
+          point.calcHGF(start, end);
 
           if (open_list.findIndex(item => item.x === point.x && item.y === point.y) === -1) { // 不在open list
             point.setParent(temp_start_point);
@@ -380,6 +393,25 @@ Page({
       }
     // }, 1000)
 
+  },
+
+  buildPath(end, start) {
+    let path = [];
+    while (end.p) {
+      console.log(end);
+      path.unshift(end);
+      end = end.p;
+    }
+    return path;
+  },
+
+  outputPath(path) {
+    let str = "Start => ";
+    for (const point of path) {
+      str += `(${point.x}, ${point.y}) => `
+    }
+    str += " End"
+    console.info(str)
   },
 
   getMinHFromOpenList(open_list) {
