@@ -25,14 +25,7 @@ class Point {
 
 Page({
   data: {
-    grid: [
-      [1, 1, 0, 0, 1, 1],
-      [1, 1, 0, 0, 0, 1],
-      [1, 1, 1, 0, 1, 0],
-      [1, 1, 0, 0, 1, 1],
-      [1, 1, 0, 0, 1, 1],
-      [1, 1, 0, 0, 0, 1],
-    ],
+    grid: [],
     mouse: {
       x: 2,
       y: 3
@@ -40,7 +33,7 @@ Page({
     available_cell: [],
     feasible_path: [],
     interval: '', // 定时器
-    timeLimit: 6000,  // 限时
+    timeLimit: 60,  // 限时
     timeTaken: 0,   // 所用时间
     step: 0,
     pass: 1,
@@ -52,20 +45,17 @@ Page({
   onLoad(options) {
     // 地图
     let pass = parseInt(options.pass) || 1
-    // this.generateArray(pass)
+    this.generateArray(pass)
 
     // 设置坐标
-    // this.setMouseCoordinate()
+    this.setMouseCoordinate()
 
-    //设置背景音乐
-    const audioContext = wx.createInnerAudioContext();
+    //设置点击音乐
     const movingAudio =  wx.createInnerAudioContext()
-    audioContext.src = "/assets/audio/bg.mp3"
-    audioContext.loop = true
 
     movingAudio.src = "/assets/audio/move.mp3"
     this.setData({
-      audioContext, movingAudio, pass
+      movingAudio, pass
     })
   },
   onShow() {
@@ -75,11 +65,9 @@ Page({
     // 设置时间
     let { timeLimit } = this.data
     let timeTaken = 0
-    clearInterval(this.data.interval)
     let interval = setInterval(() => {
       timeTaken += 1
       if (timeTaken > timeLimit) {
-        console.log('您已超时')
         this.setData({
           showModal: -2
         })
@@ -92,20 +80,6 @@ Page({
     this.setData({
       interval
     })
-
-    // 获取可用路径
-    this.getNewPath()
-
-
-    //循环背景音乐
-    // this.playBgAudio()
-
-    // this.findAvailablePaths();
-
-  },
-  onHide() {
-    this.data.audioContext.stop()
-    clearInterval(this.data.interval)
   },
   // 生成地图
   generateArray(pass = 1) {
@@ -113,15 +87,15 @@ Page({
     let percentageOccupancy   // 占用率
     switch (true) {
       case pass < 3:
-        percentageOccupancy = 40
+        percentageOccupancy = 35
         passNumber = 7
         break;
       case 3 <= pass && pass < 6:
-        percentageOccupancy = 40
+        percentageOccupancy = 30
         passNumber = 8
         break;
       case 9 > pass && pass >= 6:
-        percentageOccupancy = 30
+        percentageOccupancy = 25
         passNumber = 9
         break;
       case 12 > pass && pass >= 9:
@@ -129,12 +103,12 @@ Page({
         passNumber = 10
         break;
       case 15 > pass && pass >= 12:
-        percentageOccupancy = 10
+        percentageOccupancy = 15
         passNumber = 11
         break;
       default:
-        percentageOccupancy = 10
-        passNumber = 12
+        percentageOccupancy = 15
+        passNumber = 11
     }
     // 生成固定占位率的乱序二维数组
     let oneDimensional = new Array(passNumber)
@@ -144,8 +118,7 @@ Page({
       for(let j = 0; j < twoDimensional.length; j++) {
         j < cn ? twoDimensional[j] = 1 : twoDimensional[j] = 0
       }
-      let _twoDimensional = shuffle(twoDimensional)
-      oneDimensional[i] = _twoDimensional
+      oneDimensional[i] = shuffle(twoDimensional)
     }
     this.setData({
       grid: oneDimensional
@@ -154,12 +127,13 @@ Page({
 
   // 设置坐标
   setMouseCoordinate() {
-    let { grid } = this.data
-    let y = this.randomNumber(2, grid.length-3)
-    let x = this.randomNumber(2, grid[0].length-3)
-    let mouse = {x, y}
-    let path = this.getAvailablePoints(x,y).length
+    const { grid, pass } = this.data
+    const y = this.randomNumber(3, grid.length - 4)
+    const x = this.randomNumber(3, grid[0].length - 4)
+    const mouse = {x, y}
+    const path = this.getAvailablePoints(x,y).length
     if (grid[y][x] || path < 2) {
+      this.generateArray(pass)
       this.setMouseCoordinate()
       return
     }
@@ -170,48 +144,25 @@ Page({
    return Math.floor(Math.random() * (max - min) + min)
   },
 
-  playBgAudio(){
-    this.data.audioContext.play()
-  },
-
-  playMovingAudio() {
-    this.data.movingAudio.play();
-  },
-
   handleClick(e) {
-    let {grid, mouse} = this.data
+    let {grid, mouse, step} = this.data
     const {x: tap_x, y: tap_y} = e.currentTarget.dataset
     if (grid[tap_y][tap_x] || (tap_x === mouse.x && tap_y === mouse.y)) return;
-    this.playMovingAudio()
+    this.data.movingAudio.stop()
+    this.data.movingAudio.play()
 
-    console.log('tap: %d, %d', tap_x, tap_y)
     this.setData({
       [`grid[${tap_y}][${tap_x}]`]: 1,
-      step: this.data.step + 1
+      step: step + 1
     })
-    // this.getNewPath()
-    // const {feasible_path} = this.data
-    // if (!feasible_path.length) {
-    //   let { pass, step, timeTaken } = this.data
-    //   let role = (100 - step - timeTaken + (pass / 10)) / 15
-    //   let score = parseFloat(role.toFixed(2))
-    //   app.globalData.totalScore += score
-    //   let totalScore = parseFloat(app.globalData.totalScore.toFixed(2)) || 0
-    //   clearInterval(this.data.interval)
-    //   this.setData({
-    //     score,
-    //     totalScore,
-    //     showModal: 1
-    //   })
-    //   return
-    // }
     this.mouseRun()
   },
 
   mouseRun() {
+    let {mouse, grid, interval} = this.data
     let paths = this.findAvailablePaths();
 
-    // 有出口, 选择路径最短的出口
+    // 选择路径最短的出口
     let min_point_path;
     for (const path of paths) {
       if (!min_point_path) {
@@ -224,34 +175,44 @@ Page({
     }
 
     if (min_point_path) {
-      console.log('shortest path:');
       this.buildPath(min_point_path);
       // 选取下一个点
-      let nextPoint = min_point_path.find(item => item.p && item.p.x === this.data.mouse.x && item.p.y === this.data.mouse.y);
-      console.log('next point', nextPoint);
+      let nextPoint = min_point_path.find(item => item.p && item.p.x === mouse.x && item.p.y === mouse.y);
       if (nextPoint) {
         // ok
         this.setData({
           mouse: {x: nextPoint.x, y: nextPoint.y}
         })
+        if (grid.length - 1 === nextPoint.y || grid[0].length -1 === nextPoint.x || nextPoint.x === 0 || nextPoint.y === 0) {
+          clearInterval(interval)
+          const totalScore = this.getTotalScore()
+          this.setData({
+            showModal: -1,
+            totalScore
+          })
+        }
         return;
       }
     }
 
     console.warn("无可用路径，随机跑")
-    return;
-
-
-    let { feasible_path, grid } = this.data;
-    let new_path = feasible_path[Math.floor(Math.random()*feasible_path.length)]
-    let {x , y} = new_path
-    this.setData({
-      mouse: new_path
-    })
-    if (grid.length - 1 === y || grid[0].length -1 === x || x === 0 || y === 0) {
-      clearInterval(this.data.interval)
+    this.getNewPath()
+    let { feasible_path } = this.data;
+    if (!feasible_path.length) {
+      let { pass, step, timeTaken } = this.data
+      let role = (100 - step - timeTaken + (pass / 10)) / 15
+      let score = parseFloat(role.toFixed(2))
+      const totalScore = this.getTotalScore(score)
+      clearInterval(interval)
       this.setData({
-        showModal: -1
+        score,
+        totalScore,
+        showModal: 1
+      })
+    } else {
+      let random_point = feasible_path[Math.floor(Math.random() * feasible_path.length)]
+      this.setData({
+        mouse: random_point
       })
     }
   },
@@ -298,9 +259,13 @@ Page({
 
   // 下一关
   nextPass(e) {
-    let pass = e.currentTarget.dataset.pass || 1
+    let level = e.currentTarget.dataset.pass
+    if (!e.currentTarget.dataset.pass) {
+      app.globalData.totalScore = 0
+      level = 1
+    }
     wx.redirectTo({
-      url: `./index?pass=${pass}`
+      url: `./index?pass=${level}`
     })
   },
 
@@ -324,21 +289,19 @@ Page({
     let paths = [];
     for (const end of ends) {
       let path = this.a_star_path(new Point(this.data.mouse.x, this.data.mouse.y), end);
-      if (path) {
-        this.outputPath(path);
-        paths.push(path);
-      }
+      if (path) paths.push(path)
     }
     return [...paths];
   },
 
   a_star_path(start, end) {
+    const {grid} = this.data
     let close_list = [];
 
     // init close list
-    for (let j = 0; j < this.data.grid.length; j++) {
-      for (let k = 0; k < this.data.grid[j].length; k++) {
-        if (this.data.grid[j][k] === 1) {
+    for (let j = 0; j < grid.length; j++) {
+      for (let k = 0; k < grid[j].length; k++) {
+        if (grid[j][k] === 1) {
           if (close_list.findIndex(item => item.x === k && item.y === j) !== -1) continue;
           close_list.push(new Point(k, j))
         }
@@ -351,65 +314,41 @@ Page({
 
     let i = 0
 
-    // setInterval(() => {
-      while (open_list.length && i < 50) {
-        let temp_start_point = this.getMinHFromOpenList(open_list);
+    while (open_list.length && i < 50) {
+      let temp_start_point = this.getMinHFromOpenList(open_list);
 
-        // this.setData({
-        //   mouse: {...temp_start_point}
-        // })
+      if (temp_start_point.x === end.x && temp_start_point.y === end.y) {
+        return this.buildPath(temp_start_point, start);
+      }
 
-        if (temp_start_point.x === end.x && temp_start_point.y === end.y) {
-          return this.buildPath(temp_start_point, start);
-          // open_list.map(item => {
-          //   if (item.p && path.indexOf(item.p) === -1) {
-          //     path.push(item.p);
-          //   }
-          // })
-          // path.push(temp_start_point)
-        }
+      this.removePointFromOpenList(temp_start_point, open_list);
+      close_list.push(temp_start_point);
+      let around_points = this.getAvailablePoints(temp_start_point.x, temp_start_point.y);
+      for (const point of around_points) {
+        if (close_list.findIndex(item => item.x === point.x && item.y === point.y) !== -1) continue;
 
-        this.removePointFromOpenList(temp_start_point, open_list);
-        close_list.push(temp_start_point);
-        let around_points = this.getAvailablePoints(temp_start_point.x, temp_start_point.y);
-        for (const point of around_points) {
-          if (close_list.findIndex(item => item.x === point.x && item.y === point.y) !== -1) continue;
+        point.calcHGF(start, end);
 
-          point.calcHGF(start, end);
-
-          if (open_list.findIndex(item => item.x === point.x && item.y === point.y) === -1) { // 不在open list
+        if (open_list.findIndex(item => item.x === point.x && item.y === point.y) === -1) { // 不在open list
+          point.setParent(temp_start_point);
+          open_list.push(point)
+        } else {
+          if (point.f < temp_start_point.f) {
             point.setParent(temp_start_point);
-            open_list.push(point)
-          } else {
-            if (point.f < temp_start_point.f) {
-              point.setParent(temp_start_point);
-            }
           }
         }
-
-        i++
       }
-    // }, 1000)
-
+      i++
+    }
   },
 
-  buildPath(end, start) {
+  buildPath(end) {
     let path = [];
     while (end.p) {
-      console.log(end);
       path.unshift(end);
       end = end.p;
     }
     return path;
-  },
-
-  outputPath(path) {
-    let str = "Start => ";
-    for (const point of path) {
-      str += `(${point.x}, ${point.y}) => `
-    }
-    str += " End"
-    console.info(str)
   },
 
   getMinHFromOpenList(open_list) {
@@ -430,9 +369,16 @@ Page({
   },
 
   removePointFromOpenList(point, open_list) {
-    let index = open_list.findIndex(item => item.x === point.x && item.y === point.y);
+    const index = open_list.findIndex(item => item.x === point.x && item.y === point.y);
     if (index !== -1) {
       open_list.splice(index, 1);
     }
+  },
+
+  getTotalScore(score = 0) {
+    app.globalData.totalScore += score
+    let totalScore = app.globalData.totalScore
+    totalScore >= 0 ? totalScore : 0
+    return parseFloat(totalScore.toFixed(2)) || 0
   }
 })
